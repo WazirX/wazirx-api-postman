@@ -1,0 +1,745 @@
+{
+	"info": {
+		"_postman_id": "acdf8771-3830-47d4-a378-54203b00c960",
+		"name": "Wazirx Spot Test API",
+		"description": "This test collection of UAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account ",
+			"item": [
+				{
+					"name": "Funds 200 OK with valid response",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.url.query)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Body should contain string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"asset\", \"free\", \"locked\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/funds?timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"funds"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000",
+									"disabled": true
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Funds 403 forbidden",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.url.query)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/fund?timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"fund"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000",
+									"disabled": true
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Funds 500",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.url.query)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/funds?timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"funds"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000",
+									"disabled": true
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Account 200 OK with Valid response",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.url.query)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"accountType\",\"canTrade\",\"canWithdraw\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/account?recvWindow=5500&timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"account"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Account Info Blocked User",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.url.query)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/account?recvWindow=5500&timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"account"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "This folder contains test cases related to account status and Funds of specific user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Trading Endpoint",
+			"item": [
+				{
+					"name": "Limit buy Order",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.body.urlencoded)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"id\",\"side\",\"status\",\"price\",\"type\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "symbol",
+									"value": "btcusdt",
+									"type": "text"
+								},
+								{
+									"key": "side",
+									"value": "buy",
+									"description": "buy or sell",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "limit",
+									"description": "limit or stop_limit",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "price",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "stop_price",
+									"value": "100",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "quantity",
+									"value": "0.2",
+									"type": "text"
+								},
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000",
+									"type": "text"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}",
+									"type": "text"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/order",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"order"
+							]
+						},
+						"description": "order placement "
+					},
+					"response": []
+				},
+				{
+					"name": "Limit sell Order",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"// Generate Request Body",
+									"var request_body = ''",
+									"json_string = JSON.stringify(pm.request.body.urlencoded)",
+									"param = JSON.parse(json_string)",
+									"for (var index = 0; index < param.length; index++) {",
+									"    object = param[index]",
+									"    if (object.disabled || object.key == 'signature') { continue }",
+									"    if (request_body.length > 0) { request_body += '&' }",
+									"    value = object.value",
+									"    if (object.key == 'timestamp') { value = time }",
+									"    request_body += (object.key + '=' + value);",
+									"}",
+									"// console.log(\"Request Body = \", request_body)",
+									"",
+									"// Generate Signature",
+									"const secret_key = pm.environment.get(\"secret_key\")",
+									"const signature = CryptoJS.HmacSHA256(request_body, secret_key) + ''",
+									"pm.environment.set(\"signature\", signature)",
+									"// console.log(\"Signature = \", signature)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "symbol",
+									"value": "btcusdt",
+									"type": "text"
+								},
+								{
+									"key": "side",
+									"value": "buy",
+									"description": "buy or sell",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "stop_limit",
+									"description": "limit or stop_limit",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "price",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "stop_price",
+									"value": "100",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "quantity",
+									"value": "0.2",
+									"type": "text"
+								},
+								{
+									"key": "recvWindow",
+									"value": "5500",
+									"description": "The value cannot be greater than 60000. Default: 5000",
+									"type": "text"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}",
+									"type": "text"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/order",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"order"
+							]
+						},
+						"description": "order placement "
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
