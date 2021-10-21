@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f5f88398-a732-4441-88bc-4c16e3a0a148",
+		"_postman_id": "cad655f9-cac4-4d52-84c8-2f9793b01a10",
 		"name": "Wazirx Spot API",
 		"description": "Official WazirX Trading Platform API.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1528,11 +1528,11 @@
 									"var time = new Date().getTime()",
 									"postman.setEnvironmentVariable(\"current_time\", time)",
 									"",
-									"query_a = pm.request.body.urlencoded.toObject(true)",
+									"query_a = pm.request.url.query.toObject(true)",
 									"",
 									"// Generate Request Payload",
 									"let query_string_array = []",
-									"Object.keys(query_a).sort().forEach(function(key) {",
+									"Object.keys(query_a).forEach(function(key) {",
 									"    if (key == 'signature') { return }",
 									"    if (key == 'timestamp') {",
 									"        query_string_array.push(key + \"=\" + time)",
@@ -1572,7 +1572,7 @@
 									"            console.log(\"Signature = \", signatureHash)",
 									"",
 									"            // Assign Values",
-									"            pm.environment.set(\"signature\", signatureHash)",
+									"            pm.environment.set(\"signature\", encodeURIComponent(signatureHash, \"UTF-8\"))",
 									"        }",
 									"    })",
 									"}"
