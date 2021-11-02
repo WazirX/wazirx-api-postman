@@ -1635,7 +1635,7 @@
 			]
 		},
 		{
-			"name": "Webscoket Auth Token",
+			"name": "Websocket Auth Token",
 			"item": [
 				{
 					"name": "Create Auth Token",
