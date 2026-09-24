@@ -535,7 +535,7 @@
 									"type": "text"
 								},
 								{
-									"key": "stop_price",
+									"key": "stopPrice",
 									"value": "510",
 									"type": "text",
 									"disabled": true
@@ -1804,7 +1804,7 @@
 							"urlencoded": []
 						},
 						"url": {
-							"raw": "{{wazirx_api_domain}}/sapi/v1/funds?recvWindow1=20000&timestamp={{current_time}}&signature={{signature}}",
+							"raw": "{{wazirx_api_domain}}/sapi/v1/funds?recvWindow=20000&timestamp={{current_time}}&signature={{signature}}",
 							"host": [
 								"{{wazirx_api_domain}}"
 							],
@@ -1815,8 +1815,9 @@
 							],
 							"query": [
 								{
-									"key": "recvWindow1",
-									"value": "20000"
+									"key": "recvWindow",
+									"value": "20000",
+									"description": "The value cannot be greater than 60000. Default: 5000"
 								},
 								{
 									"key": "timestamp",
@@ -1829,6 +1830,440 @@
 							]
 						},
 						"description": "Get fund details for current account."
+					},
+					"response": []
+				},
+				{
+					"name": "Funds V2",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Variables",
+									"var navigator = {}; //fake a navigator object for the lib",
+									"var window = {}; //fake a window object for the lib",
+									"const privateKey = pm.environment.get(\"rsa_private_key\");",
+									"",
+									"const secretKey = pm.environment.get(\"secret_key\");",
+									"",
+									"// Set Current Time",
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"query_a = pm.request.url.query.toObject(true)",
+									"",
+									"// Generate Request Payload",
+									"let query_string_array = []",
+									"Object.keys(query_a).forEach(function(key) {",
+									"    if (key == 'signature') { return }",
+									"    if (key == 'timestamp') {",
+									"        query_string_array.push(key + \"=\" + time)",
+									"    }",
+									"    else if (typeof query_a[key] == \"string\") {",
+									"        query_string_array.push(key + \"=\" + query_a[key])",
+									"    } else {",
+									"        query_a[key].forEach(function(value){",
+									"            query_string_array.push(key + \"=\" + value)",
+									"        })",
+									"    }",
+									"})",
+									"",
+									"const payload = query_string_array.join(\"&\")",
+									"console.log(\"Request Payload = \", payload)",
+									"",
+									"if(secretKey) {",
+									"    const signature = CryptoJS.HmacSHA256(payload, secretKey) + ''",
+									"    pm.environment.set(\"signature\", signature)",
+									"    console.log(\"Signature = \"+signature);",
+									"} else {",
+									"    // Download RSA Library",
+									"    pm.sendRequest(pm.environment.get(\"rsa_library_js\"), function (err, res) {",
+									"",
+									"        if (err){",
+									"            console.log(\"Error: \" + err);",
+									"        }",
+									"        else {",
+									"            // Compile & Run RSA Library",
+									"            eval(res.text())();",
+									"",
+									"            // Sign Payload",
+									"            var signatureLib = new KJUR.crypto.Signature({\"alg\": \"SHA256withRSA\"});",
+									"            signatureLib.init(privateKey);",
+									"            signatureLib.updateString(payload);",
+									"            var signatureHash = hex2b64(signatureLib.sign());",
+									"            console.log(\"Signature = \", signatureHash)",
+									"",
+									"            // Assign Values",
+									"            pm.environment.set(\"signature\", encodeURIComponent(signatureHash, \"UTF-8\"))",
+									"        }",
+									"    })",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "X-Wx-Apikey",
+								"value": "{{api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v2/funds?wallets=spot&wallets=futures&timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v2",
+								"funds"
+							],
+							"query": [
+								{
+									"key": "wallets",
+									"value": "spot",
+									"description": "Wallets to include: spot, futures. Repeat for multiple. If omitted, both are returned."
+								},
+								{
+									"key": "wallets",
+									"value": "futures"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						},
+						"description": "Returns the user's balances across the Spot and Futures wallets."
+					},
+					"response": []
+				},
+				{
+					"name": "Wallet Transfer",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Variables",
+									"var navigator = {}; //fake a navigator object for the lib",
+									"var window = {}; //fake a window object for the lib",
+									"const privateKey = pm.environment.get(\"rsa_private_key\");",
+									"",
+									"const secretKey = pm.environment.get(\"secret_key\");",
+									"",
+									"// Set Current Time",
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"query_a = pm.request.body.urlencoded.toObject(true)",
+									"",
+									"// Generate Request Payload",
+									"let query_string_array = []",
+									"Object.keys(query_a).forEach(function(key) {",
+									"    if (key == 'signature') { return }",
+									"    if (key == 'timestamp') {",
+									"        query_string_array.push(key + \"=\" + time)",
+									"    }",
+									"    else if (typeof query_a[key] == \"string\") {",
+									"        query_string_array.push(key + \"=\" + query_a[key])",
+									"    } else {",
+									"        query_a[key].forEach(function(value){",
+									"            query_string_array.push(key + \"=\" + value)",
+									"        })",
+									"    }",
+									"})",
+									"",
+									"const payload = query_string_array.join(\"&\")",
+									"console.log(\"Request Payload = \", payload)",
+									"",
+									"if(secretKey) {",
+									"    const signature = CryptoJS.HmacSHA256(payload, secretKey) + ''",
+									"    pm.environment.set(\"signature\", signature)",
+									"    console.log(\"Signature = \"+signature);",
+									"} else {",
+									"    // Download RSA Library",
+									"    pm.sendRequest(pm.environment.get(\"rsa_library_js\"), function (err, res) {",
+									"",
+									"        if (err){",
+									"            console.log(\"Error: \" + err);",
+									"        }",
+									"        else {",
+									"            // Compile & Run RSA Library",
+									"            eval(res.text())();",
+									"",
+									"            // Sign Payload",
+									"            var signatureLib = new KJUR.crypto.Signature({\"alg\": \"SHA256withRSA\"});",
+									"            signatureLib.init(privateKey);",
+									"            signatureLib.updateString(payload);",
+									"            var signatureHash = hex2b64(signatureLib.sign());",
+									"            console.log(\"Signature = \", signatureHash)",
+									"",
+									"            // Assign Values",
+									"            pm.environment.set(\"signature\", signatureHash)",
+									"        }",
+									"    })",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "X-Wx-Apikey",
+								"value": "{{api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "type",
+									"value": "MAIN_TO_FUTURE",
+									"description": "MAIN_TO_FUTURE or FUTURE_TO_MAIN",
+									"type": "text"
+								},
+								{
+									"key": "asset",
+									"value": "INR",
+									"description": "Asset to transfer (e.g. INR, USDT)",
+									"type": "text"
+								},
+								{
+									"key": "amount",
+									"value": "5000",
+									"description": "Amount to transfer",
+									"type": "text"
+								},
+								{
+									"key": "requestId",
+									"value": "",
+									"description": "Client-supplied unique id for idempotency; alphanumeric, max 64 chars",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}",
+									"type": "text"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/asset/transfer",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"asset",
+								"transfer"
+							]
+						},
+						"description": "Initiate a transfer between the Spot and Futures wallets."
+					},
+					"response": []
+				},
+				{
+					"name": "Wallet Transfer History",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Variables",
+									"var navigator = {}; //fake a navigator object for the lib",
+									"var window = {}; //fake a window object for the lib",
+									"const privateKey = pm.environment.get(\"rsa_private_key\");",
+									"",
+									"const secretKey = pm.environment.get(\"secret_key\");",
+									"",
+									"// Set Current Time",
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"query_a = pm.request.url.query.toObject(true)",
+									"",
+									"// Generate Request Payload",
+									"let query_string_array = []",
+									"Object.keys(query_a).forEach(function(key) {",
+									"    if (key == 'signature') { return }",
+									"    if (key == 'timestamp') {",
+									"        query_string_array.push(key + \"=\" + time)",
+									"    }",
+									"    else if (typeof query_a[key] == \"string\") {",
+									"        query_string_array.push(key + \"=\" + query_a[key])",
+									"    } else {",
+									"        query_a[key].forEach(function(value){",
+									"            query_string_array.push(key + \"=\" + value)",
+									"        })",
+									"    }",
+									"})",
+									"",
+									"const payload = query_string_array.join(\"&\")",
+									"console.log(\"Request Payload = \", payload)",
+									"",
+									"if(secretKey) {",
+									"    const signature = CryptoJS.HmacSHA256(payload, secretKey) + ''",
+									"    pm.environment.set(\"signature\", signature)",
+									"    console.log(\"Signature = \"+signature);",
+									"} else {",
+									"    // Download RSA Library",
+									"    pm.sendRequest(pm.environment.get(\"rsa_library_js\"), function (err, res) {",
+									"",
+									"        if (err){",
+									"            console.log(\"Error: \" + err);",
+									"        }",
+									"        else {",
+									"            // Compile & Run RSA Library",
+									"            eval(res.text())();",
+									"",
+									"            // Sign Payload",
+									"            var signatureLib = new KJUR.crypto.Signature({\"alg\": \"SHA256withRSA\"});",
+									"            signatureLib.init(privateKey);",
+									"            signatureLib.updateString(payload);",
+									"            var signatureHash = hex2b64(signatureLib.sign());",
+									"            console.log(\"Signature = \", signatureHash)",
+									"",
+									"            // Assign Values",
+									"            pm.environment.set(\"signature\", encodeURIComponent(signatureHash, \"UTF-8\"))",
+									"        }",
+									"    })",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"type": "text",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "X-Wx-Apikey",
+								"value": "{{api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/asset/transfer?type=MAIN_TO_FUTURE&timestamp={{current_time}}&signature={{signature}}",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"asset",
+								"transfer"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "MAIN_TO_FUTURE",
+									"description": "MAIN_TO_FUTURE or FUTURE_TO_MAIN"
+								},
+								{
+									"key": "startTime",
+									"value": "1700000000000",
+									"description": "If omitted, defaults to the last 7 days",
+									"disabled": true
+								},
+								{
+									"key": "endTime",
+									"value": "1700000000000",
+									"disabled": true
+								},
+								{
+									"key": "fromId",
+									"value": "9000123",
+									"description": "Transfer record id to fetch from; returns records older than fromId",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Records per page; default 100, max 1000",
+									"disabled": true
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
+							]
+						},
+						"description": "Query the history of Spot <-> Futures transfers."
 					},
 					"response": []
 				}
@@ -1855,7 +2290,7 @@
 									"var time = new Date().getTime()",
 									"postman.setEnvironmentVariable(\"current_time\", time)",
 									"",
-									"query_a = pm.request.body.urlencoded.toObject(true)",
+									"query_a = pm.request.url.query.toObject(true)",
 									"",
 									"// Generate Request Payload",
 									"let query_string_array = []",
@@ -1934,28 +2369,8 @@
 								"disabled": true
 							}
 						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "recvWindow",
-									"value": "10000",
-									"type": "text"
-								},
-								{
-									"key": "timestamp",
-									"value": "{{current_time}}",
-									"type": "text"
-								},
-								{
-									"key": "signature",
-									"value": "{{signature}}",
-									"type": "text"
-								}
-							]
-						},
 						"url": {
-							"raw": "{{wazirx_api_domain}}/sapi/v1/create_auth_token",
+							"raw": "{{wazirx_api_domain}}/sapi/v1/create_auth_token?recvWindow=10000&timestamp={{current_time}}&signature={{signature}}",
 							"host": [
 								"{{wazirx_api_domain}}"
 							],
@@ -1963,6 +2378,21 @@
 								"sapi",
 								"v1",
 								"create_auth_token"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "10000",
+									"description": "The value cannot be greater than 60000. Default: 5000"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								}
 							]
 						}
 					},
@@ -2101,6 +2531,152 @@
 								{
 									"key": "timestamp",
 									"value": "{{current_time}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Address Book",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Variables",
+									"// var navigator = {}; //fake a navigator object for the lib",
+									"// var window = {}; //fake a window object for the lib",
+									"// const privateKey = pm.environment.get(\"rsa_private_key\");",
+									"",
+									"const secretKey = pm.environment.get(\"secret_key\");",
+									"",
+									"// Set Current Time",
+									"var time = new Date().getTime()",
+									"postman.setEnvironmentVariable(\"current_time\", time)",
+									"",
+									"query_a = pm.request.url.query.toObject(true)",
+									"",
+									"// Generate Request Payload",
+									"let query_string_array = []",
+									"Object.keys(query_a).forEach(function(key) {",
+									"    if (key == 'signature') { return }",
+									"    if (key == 'timestamp') {",
+									"        query_string_array.push(key + \"=\" + time)",
+									"    }",
+									"    else if (typeof query_a[key] == \"string\") {",
+									"        query_string_array.push(key + \"=\" + query_a[key])",
+									"    } else {",
+									"        query_a[key].forEach(function(value){",
+									"            query_string_array.push(key + \"=\" + value)",
+									"        })",
+									"    }",
+									"})",
+									"",
+									"const payload = query_string_array.join(\"&\")",
+									"console.log(\"Request Payload = \", payload)",
+									"",
+									"if(secretKey) {",
+									"    const signature = CryptoJS.HmacSHA256(payload, secretKey) + ''",
+									"    pm.environment.set(\"signature\", signature)",
+									"    console.log(\"Signature = \"+signature);",
+									"} else {",
+									"    // Download RSA Library",
+									"    pm.sendRequest(pm.environment.get(\"rsa_library_js\"), function (err, res) {",
+									"",
+									"        if (err){",
+									"            console.log(\"Error: \" + err);",
+									"        }",
+									"        else {",
+									"            // Compile & Run RSA Library",
+									"            eval(res.text())();",
+									"",
+									"            // Sign Payload",
+									"            var signatureLib = new KJUR.crypto.Signature({\"alg\": \"SHA256withRSA\"});",
+									"            signatureLib.init(privateKey);",
+									"            signatureLib.updateString(payload);",
+									"            var signatureHash = hex2b64(signatureLib.sign());",
+									"            console.log(\"Signature = \", signatureHash)",
+									"",
+									"            // Assign Values",
+									"            pm.environment.set(\"signature\", encodeURIComponent(signatureHash, \"UTF-8\"))",
+									"        }",
+									"    })",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Api-Key",
+								"value": "{{api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "recvWindow",
+									"value": "10000",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wazirx_api_domain}}/sapi/v1/crypto/withdraw/address-book?recvWindow=10000&signature={{signature}}&timestamp={{current_time}}&coin=btc&sortOrder=asc",
+							"host": [
+								"{{wazirx_api_domain}}"
+							],
+							"path": [
+								"sapi",
+								"v1",
+								"crypto",
+								"withdraw",
+								"address-book"
+							],
+							"query": [
+								{
+									"key": "recvWindow",
+									"value": "10000",
+									"description": "The value cannot be greater than 60000. Default: 5000"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}"
+								},
+								{
+									"key": "coin",
+									"value": "btc"
+								},
+								{
+									"key": "sortOrder",
+									"value": "asc",
+									"description": "Default: desc; asc or desc"
 								}
 							]
 						}
@@ -2446,7 +3022,7 @@
 									"var time = new Date().getTime()",
 									"postman.setEnvironmentVariable(\"current_time\", time)",
 									"",
-									"query_a = pm.request.url.query.toObject(true)",
+									"query_a = pm.request.body.urlencoded.toObject(true)",
 									"",
 									"// Generate Request Payload",
 									"let query_string_array = []",
@@ -2465,7 +3041,7 @@
 									"})",
 									"",
 									"const payload = query_string_array.join(\"&\")",
-									"console.log(\"Request Payload ........= \", payload)",
+									"console.log(\"Request Payload = \", payload)",
 									"",
 									"if(secretKey) {",
 									"    const signature = CryptoJS.HmacSHA256(payload, secretKey) + ''",
@@ -2490,7 +3066,7 @@
 									"            console.log(\"Signature = \", signatureHash)",
 									"",
 									"            // Assign Values",
-									"            pm.environment.set(\"signature\", encodeURIComponent(signatureHash, \"UTF-8\"))",
+									"            pm.environment.set(\"signature\", signatureHash)",
 									"        }",
 									"    })",
 									"}"
@@ -2508,8 +3084,64 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "coin",
+									"value": "xrp",
+									"type": "text"
+								},
+								{
+									"key": "addressBookId",
+									"value": "123",
+									"description": "Obtain via GET /sapi/v1/crypto/withdraw/address-book",
+									"type": "text"
+								},
+								{
+									"key": "amount",
+									"value": "100.50",
+									"type": "text"
+								},
+								{
+									"key": "withdrawConsent",
+									"value": "I confirm that this withdrawal of crypto assets is being done to my own wallet, as specified above. I authorize you to share travel rule information with the destination wallet service provider wherever applicable.",
+									"description": "Fetch from networkList.withdrawConsent.message in GET /sapi/v1/coins response. Case-sensitive.",
+									"type": "text"
+								},
+								{
+									"key": "extra",
+									"value": "Remark text",
+									"description": "Enter Remarks",
+									"type": "text"
+								},
+								{
+									"key": "withdrawOrderId",
+									"value": "clientOrderIdSampl12",
+									"description": "A unique client-generated id. Automatically generated if not sent.",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "recvWindow",
+									"value": "10000",
+									"description": "The value cannot be greater than 60000. Default: 5000",
+									"type": "text"
+								},
+								{
+									"key": "timestamp",
+									"value": "{{current_time}}",
+									"type": "text"
+								},
+								{
+									"key": "signature",
+									"value": "{{signature}}",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
-							"raw": "{{wazirx_api_domain}}/sapi/v1/crypto/withdraws?coin=eth&timestamp={{current_time}}&signature={{signature}}&address=0x8F659903188f7e8Df7b732aB1D4F77889bA64169&amount=0.02&network=eth&withdrawConsent=I hereby confirm that I am withdrawing these crypto assets.",
+							"raw": "{{wazirx_api_domain}}/sapi/v1/crypto/withdraw",
 							"host": [
 								"{{wazirx_api_domain}}"
 							],
@@ -2517,47 +3149,7 @@
 								"sapi",
 								"v1",
 								"crypto",
-								"withdraws"
-							],
-							"query": [
-								{
-									"key": "coin",
-									"value": "eth"
-								},
-								{
-									"key": "timestamp",
-									"value": "{{current_time}}"
-								},
-								{
-									"key": "signature",
-									"value": "{{signature}}"
-								},
-								{
-									"key": "memberId",
-									"value": "",
-									"disabled": true
-								},
-								{
-									"key": "address",
-									"value": "0x8F659903188f7e8Df7b732aB1D4F77889bA64169"
-								},
-								{
-									"key": "amount",
-									"value": "0.02"
-								},
-								{
-									"key": "withdrawOrderId",
-									"value": "",
-									"disabled": true
-								},
-								{
-									"key": "network",
-									"value": "eth"
-								},
-								{
-									"key": "withdrawConsent",
-									"value": "I hereby confirm that I am withdrawing these crypto assets."
-								}
+								"withdraw"
 							]
 						}
 					},
