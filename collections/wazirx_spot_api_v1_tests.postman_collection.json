@@ -582,7 +582,7 @@
 									"type": "text"
 								},
 								{
-									"key": "stop_price",
+									"key": "stopPrice",
 									"value": "100",
 									"type": "text",
 									"disabled": true
@@ -696,7 +696,7 @@
 									"type": "text"
 								},
 								{
-									"key": "stop_price",
+									"key": "stopPrice",
 									"value": "100",
 									"type": "text",
 									"disabled": true
