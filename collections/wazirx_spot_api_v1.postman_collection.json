@@ -546,6 +546,13 @@
 									"type": "text"
 								},
 								{
+									"key": "clientOrderId",
+									"value": "clientOrderIdSampl12",
+									"description": "Optional. A unique id among open orders. Automatically generated if not sent.",
+									"type": "text",
+									"disabled": true
+								},
+								{
 									"key": "recvWindow",
 									"value": "10000",
 									"description": "The value cannot be greater than 60000. Default: 5000",
@@ -690,9 +697,22 @@
 									"type": "text"
 								},
 								{
+									"key": "stopPrice",
+									"value": "110",
+									"type": "text",
+									"disabled": true
+								},
+								{
 									"key": "quantity",
 									"value": "10",
 									"type": "text"
+								},
+								{
+									"key": "clientOrderId",
+									"value": "clientOrderIdSampl12",
+									"description": "Optional. A unique id among open orders. Automatically generated if not sent.",
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "recvWindow",
@@ -836,6 +856,12 @@
 								{
 									"key": "orderId",
 									"value": "23223196"
+								},
+								{
+									"key": "clientOrderId",
+									"value": "clientOrderIdSampl12",
+									"description": "Optional. Either orderId or clientOrderId is needed; if both are sent, clientOrderId takes preference.",
+									"disabled": true
 								},
 								{
 									"key": "recvWindow",
@@ -1085,13 +1111,13 @@
 							{
 								"key": "X-Api-Key",
 								"value": "{{api_key}}",
-								"type": "text",
-								"disabled": true
+								"type": "text"
 							},
 							{
 								"key": "X-Wx-Apikey",
 								"type": "text",
-								"value": "{{api_key}}"
+								"value": "{{api_key}}",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -1249,6 +1275,13 @@
 									"key": "orderId",
 									"value": "23223196",
 									"type": "text"
+								},
+								{
+									"key": "clientOrderId",
+									"value": "clientOrderIdSampl12",
+									"description": "Optional. Either orderId or clientOrderId is needed; if both are sent, clientOrderId takes preference.",
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "recvWindow",
